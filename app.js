@@ -30,6 +30,8 @@ function applyLang() {
     el.placeholder = T(el.dataset.ph);
   });
   $("#lang").textContent = T("langBtn");
+  var ou = $("#opt-unk");
+  if (ou) ou.textContent = T("unknownDx");   // 选项已建出来的话, 切语言也要跟着变
   $("#rlabel").textContent = (LANG === "zh" ? "第 " + ROUND + " 轮" : "Round " + ROUND)
     + (ROUND === 2 ? (LANG === "zh" ? "（含 AI 参考）" : " (with AI)") : "");
   if (user) refreshDynamic();
@@ -122,7 +124,9 @@ function buildOptions() {
   // 分析时能把"不确定"和"确信但答错"区分开。
   var unk = document.createElement("button");
   unk.className = "opt unk"; unk.dataset.idx = "-1";
+  unk.id = "opt-unk";
   unk.setAttribute("data-i18n", "unknownDx");
+  unk.textContent = T("unknownDx");          // ★ 立刻填字
   unk.onclick = function () { pick(-1); };
   frag.appendChild(unk);
   CLASSES.forEach(function (name, i) {
