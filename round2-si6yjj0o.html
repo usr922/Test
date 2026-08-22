@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="appTitle">眼底读片实验</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<button id="lang" class="langbtn">EN</button>
+
+<!-- 1. 登记 -->
+<main id="page-login" class="center">
+  <div class="card auth">
+    <h1 data-i18n="appTitle"></h1>
+    <p class="sub" data-i18n="roundSub"></p>
+    <form id="form-login" autocomplete="off">
+      <label><span data-i18n="username"></span> <span class="req">*</span>
+        <input name="username" required data-ph="phUser"></label>
+      <label><span data-i18n="institution"></span> <span class="req">*</span>
+        <input name="institution" required data-ph="phInst"></label>
+      <label><span data-i18n="fullName"></span> <span class="req">*</span>
+        <input name="full_name" required></label>
+      <label><span data-i18n="jobTitle"></span> <span class="req">*</span>
+        <input name="title" required data-ph="phTitle">
+        <small data-i18n-html="idHint"></small></label>
+      <div id="login-msg" class="msg"></div>
+      <button class="primary" type="submit" data-i18n="enter"></button>
+    </form>
+  </div>
+</main>
+
+<!-- 2. 首页 -->
+<main id="page-home" class="center hidden">
+  <div class="card round-pick single">
+    <h2 data-i18n="roundSub"></h2>
+    <div class="rp" id="prog">—</div>
+    <button class="primary" id="btn-start" data-i18n="start"></button>
+    <p class="note" data-i18n="autosave"></p>
+    <div class="home-actions">
+      <button class="ghost" id="btn-result" data-i18n="viewResult"></button>
+      <button class="ghost" id="btn-export" data-i18n="exportJson"></button>
+      <button class="ghost" id="btn-switch" data-i18n="switchUser"></button>
+    </div>
+  </div>
+</main>
+
+<!-- 3. 答题 -->
+<main id="page-quiz" class="hidden">
+  <header class="topbar">
+    <span class="brand" data-i18n="appTitle"></span>
+    <span id="rlabel" class="rlabel"></span>
+    <span class="spacer"></span>
+    <span id="sync" class="sync"></span>
+    <span id="who" class="who"></span>
+    <button id="btn-back" class="ghost" data-i18n="back"></button>
+  </header>
+  <div class="stage">
+    <div class="imgwrap">
+      <img id="photo" alt="fundus image">
+      <div id="ai" class="ai hidden">
+        <div class="ai-t" data-i18n="aiTitle"></div>
+        <ol id="ai-list"></ol>
+      </div>
+    </div>
+    <p class="hint" data-i18n="clickImg"></p>
+    <p class="ask" data-i18n="ask"></p>
+    <p class="counter"><span data-i18n="no"></span> <b id="pos">1</b>
+       <span data-i18n="of"></span> <span id="tot">206</span></p>
+    <div class="bar"><div id="barfill"></div></div>
+  </div>
+  <div id="opts" class="opts"></div>
+  <div class="footer">
+    <button id="prev" class="ghost" data-i18n="prev"></button>
+    <span id="picked" class="picked"></span>
+    <button id="next" class="primary" data-i18n="next"></button>
+  </div>
+</main>
+
+<!-- 4. 结果（截图用） -->
+<main id="page-result" class="center hidden">
+  <div class="card result">
+    <h2 id="res-title"></h2>
+    <table class="idtab">
+      <tr><th data-i18n="username"></th><td id="res-user"></td>
+          <th data-i18n="institution"></th><td id="res-inst"></td></tr>
+      <tr><th data-i18n="fullName"></th><td id="res-name"></td>
+          <th data-i18n="jobTitle"></th><td id="res-title2"></td></tr>
+      <tr><th data-i18n="roundLbl"></th><td id="res-round"></td>
+          <th data-i18n="when"></th><td id="res-when"></td></tr>
+    </table>
+    <div class="stats">
+      <div class="stat"><b id="res-n">0</b><span data-i18n="answered"></span></div>
+      <div class="stat"><b id="res-c">0</b><span data-i18n="correct"></span></div>
+      <div class="stat hi"><b id="res-acc">0%</b><span data-i18n="accuracy"></span></div>
+    </div>
+    <table class="timetab">
+      <tr><th data-i18n="totalTime"></th><td id="res-total"></td>
+          <th data-i18n="meanTime"></th><td id="res-mean"></td>
+          <th data-i18n="medTime"></th><td id="res-med"></td></tr>
+    </table>
+    <div class="code"><span data-i18n="code"></span> <b id="res-code"></b></div>
+    <div id="res-sync" class="ressync"></div>
+    <p class="shot" data-i18n="shot"></p>
+    <div class="home-actions">
+      <button id="res-export" class="ghost" data-i18n="exportJson"></button>
+      <button id="res-back" class="ghost" data-i18n="back"></button>
+    </div>
+  </div>
+</main>
+
+<div id="lb" class="lightbox hidden"><img id="lbimg"><span class="lbx">×</span></div>
+
+<script>window.QUIZ_ROUND = 2;</script>
+<script src="config.js"></script>
+<script src="i18n.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
