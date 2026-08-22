@@ -13,7 +13,8 @@ var user = null, CUR = 0, tShown = 0, LANG = "zh";
 
 /* ---------------- i18n ---------------- */
 function T(k) { return (window.I18N[LANG] || {})[k] || k; }
-function clsName(i) { return i === -1 ? T("unknownDx") : CLASSES[i]; }
+var UNK_IDX = 103;                     // 0-102 是 103 个具体类别, 103 = Unknown
+function clsName(i) { return i === UNK_IDX ? T("unknownDx") : CLASSES[i]; }
 
 function applyLang() {
   document.documentElement.lang = LANG === "zh" ? "zh" : "en";
@@ -30,8 +31,8 @@ function applyLang() {
     el.placeholder = T(el.dataset.ph);
   });
   $("#lang").textContent = T("langBtn");
-  var ou = $("#opt-unk");
-  if (ou) ou.textContent = T("unknownDx");   // 选项已建出来的话, 切语言也要跟着变
+  var ou = $("#opt-unk");                    // 选项已建出来的话, 切语言也要跟着变
+  if (ou) ou.innerHTML = '<span class="oi">' + UNK_IDX + '.</span> ' + T("unknownDx");
   $("#rlabel").textContent = (LANG === "zh" ? "第 " + ROUND + " 轮" : "Round " + ROUND)
     + (ROUND === 2 ? (LANG === "zh" ? "（含 AI 参考）" : " (with AI)") : "");
   if (user) refreshDynamic();
@@ -120,15 +121,6 @@ var optsBuilt = false;
 function buildOptions() {
   if (optsBuilt) return;
   var frag = document.createDocumentFragment();
-  // 「无法判断」放最前面, 下标 -1。医生看不出就选它, 好过被迫在 103 个里瞎猜 ——
-  // 分析时能把"不确定"和"确信但答错"区分开。
-  var unk = document.createElement("button");
-  unk.className = "opt unk"; unk.dataset.idx = "-1";
-  unk.id = "opt-unk";
-  unk.setAttribute("data-i18n", "unknownDx");
-  unk.textContent = T("unknownDx");          // ★ 立刻填字
-  unk.onclick = function () { pick(-1); };
-  frag.appendChild(unk);
   CLASSES.forEach(function (name, i) {
     var el = document.createElement("button");
     el.className = "opt"; el.dataset.idx = i;
@@ -136,6 +128,13 @@ function buildOptions() {
     el.onclick = function () { pick(i); };
     frag.appendChild(el);
   });
+  // 最后追加第 104 个选项：103. Unknown。医生看不出就选它, 好过在 103 个里瞎猜 ——
+  // 分析时能把"不确定"和"确信但答错"区分开。样式与其余选项一致。
+  var unk = document.createElement("button");
+  unk.className = "opt"; unk.dataset.idx = String(UNK_IDX); unk.id = "opt-unk";
+  unk.innerHTML = '<span class="oi">' + UNK_IDX + '.</span> ' + T("unknownDx");
+  unk.onclick = function () { pick(UNK_IDX); };
+  frag.appendChild(unk);
   $("#opts").appendChild(frag); optsBuilt = true;
 }
 
@@ -214,7 +213,7 @@ function showResult() {
   var nc = 0, nu = 0, times = [];
   uids.forEach(function (u) {
     var it = ITEMS.filter(function (x) { return String(x.uid) === u; })[0];
-    if (ans[u] === -1) nu++;
+    if (ans[u] === UNK_IDX) nu++;
     if (ans[u] === it.truth) nc++;
     var ms = (meta[u] || {}).ms;
     if (ms > 0 && ms < 30 * 60 * 1000) times.push(ms);      // 掐掉挂机的异常值
@@ -284,7 +283,7 @@ function buildPayload(partial) {
            round: ROUND, partial: !!partial,
            client_time: new Date().toISOString(),
            n_items: N, n_answered: recs.length, n_correct: nc,
-           n_unknown: recs.filter(function (r) { return r.choice_idx === -1; }).length,
+           n_unknown: recs.filter(function (r) { return r.choice_idx === UNK_IDX; }).length,
            accuracy: +(nc / recs.length).toFixed(4),
            total_ms: times.reduce(function (a, b) { return a + b; }, 0),
            verify_code: verifyCode(), records: recs };

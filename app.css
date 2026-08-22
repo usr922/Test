@@ -142,9 +142,4 @@ label small{display:block;margin-top:4px;color:#909399;font-size:12px;font-weigh
 .ressync.ok{color:#67c23a;font-weight:600}
 .ressync.err{color:var(--red)}
 
-/* ---------- 诊断选项里的「无法判断」 ---------- */
-.opt.unk{grid-column:1/-1;border-style:dashed;border-color:#c0c4cc;color:var(--sub);
-  text-align:center;font-weight:600}
-.opt.unk:hover{border-color:#e6a23c;color:#e6a23c}
-.opt.unk.sel{background:#e6a23c;border-color:#e6a23c;border-style:solid;color:#fff}
 .stats{grid-template-columns:repeat(4,1fr)}
