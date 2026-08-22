@@ -24,9 +24,11 @@
         <input name="full_name" required></label>
       <label><span data-i18n="jobTitle"></span> <span class="req">*</span>
         <input name="title" required data-ph="phTitle"></label>
-      <label><span data-i18n="years"></span> <span class="req">*</span>
-        <input name="years" type="number" min="0" max="70" step="1" required data-ph="phYears">
-        <small data-i18n-html="idHint"></small></label>
+      <div class="field"><label for="f-years"><span data-i18n="years"></span> <span class="req">*</span></label>
+        <input id="f-years" name="years" type="number" min="0" max="70" step="1" data-ph="phYears">
+        <label class="ck"><input type="checkbox" id="f-years-unk" name="years_unknown">
+          <span data-i18n="unknown"></span></label>
+        <small data-i18n-html="idHint"></small></div>
       <div id="login-msg" class="msg"></div>
       <button class="primary" type="submit" data-i18n="enter"></button>
     </form>

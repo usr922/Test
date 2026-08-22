@@ -19,12 +19,15 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var key = (d.username || '').toLowerCase() + '|' + d.round;
+    // 医生可以选「不清楚」，此时前端送 null，这里落成一个明确的标签而不是空白
+    var yrs = (d.years_in_practice === null || d.years_in_practice === undefined ||
+               d.years_in_practice === '') ? '不详' : d.years_in_practice;
 
     // ---------- 汇总 ----------
     var sh = sheet_(ss, SUMMARY, ['提交时间','用户名','姓名','单位','职称','从业年限','轮次',
                                   '已答','总题数','正确','正确率','净用时(分)','校验码','状态','key']);
     var row = [new Date(), d.username, d.full_name, d.institution, d.title,
-               d.years_in_practice, d.round,
+               yrs, d.round,
                d.n_answered, d.n_items, d.n_correct,
                d.accuracy, Math.round((d.total_ms || 0) / 60000 * 10) / 10,
                d.verify_code, d.partial ? '进行中' : '已完成', key];
@@ -36,7 +39,7 @@ function doPost(e) {
                                  'AI_Top1','AI_Top5','key']);
     deleteByKey_(dt, 14, key);          // 先清掉这人这轮的旧明细
     var rows = (d.records || []).map(function (r) {
-      return [new Date(), d.username, d.institution, d.years_in_practice,
+      return [new Date(), d.username, d.institution, yrs,
               d.round, r.position, r.uid,
               r.choice_name, r.truth_name, r.correct,
               Math.round((r.ms_spent || 0) / 100) / 10,

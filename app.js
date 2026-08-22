@@ -73,10 +73,20 @@ function showPage(id) {
 }
 
 /* ---------------- 登记 ---------------- */
+(function () {
+  var unk = $("#f-years-unk"), yr = $("#f-years");
+  if (unk && yr) unk.onchange = function () {
+    yr.disabled = unk.checked; if (unk.checked) yr.value = "";
+  };
+})();
+
 $("#form-login").onsubmit = function (e) {
   e.preventDefault();
   var o = {}; new FormData(e.target).forEach(function (v, k) { o[k] = String(v).trim(); });
-  if (!o.username || !o.full_name || !o.institution || !o.title || !o.years) {
+  o.years_unknown = !!$("#f-years-unk").checked;
+  if (o.years_unknown) o.years = "";
+  if (!o.username || !o.full_name || !o.institution || !o.title ||
+      (!o.years && !o.years_unknown)) {
     $("#login-msg").className = "msg err"; $("#login-msg").textContent = T("required"); return;
   }
   user = o;
@@ -208,7 +218,8 @@ function showResult() {
   $("#res-inst").textContent = user.institution;
   $("#res-name").textContent = user.full_name || "—";
   $("#res-title2").textContent = user.title || "—";
-  $("#res-years").textContent = user.years ? user.years + (LANG === "zh" ? " 年" : " yr") : "—";
+  $("#res-years").textContent = user.years_unknown ? T("yearsUnknown")
+    : (user.years ? user.years + (LANG === "zh" ? " 年" : " yr") : "—");
   $("#res-round").textContent = ROUND === 1
     ? (LANG === "zh" ? "第 1 轮（无 AI 辅助）" : "Round 1 (unaided)")
     : (LANG === "zh" ? "第 2 轮（含 AI 参考）" : "Round 2 (with AI)");
@@ -258,7 +269,7 @@ function buildPayload(partial) {
                   .filter(function (m) { return m > 0 && m < 1800000; });
   return { username: user.username, full_name: user.full_name,
            institution: user.institution, title: user.title,
-           years_in_practice: Number(user.years),
+           years_in_practice: user.years_unknown ? null : Number(user.years),
            round: ROUND, partial: !!partial,
            client_time: new Date().toISOString(),
            n_items: N, n_answered: recs.length, n_correct: nc,
@@ -317,7 +328,7 @@ $("#btn-export").onclick = function () {
   var nc = recs.filter(function (x) { return x.correct; }).length;
   var out = { username: user.username, institution: user.institution,
               full_name: user.full_name || "", title: user.title || "",
-              years_in_practice: Number(user.years) || null,
+              years_in_practice: user.years_unknown ? null : (Number(user.years) || null),
               round: ROUND, exported_at: new Date().toISOString(),
               n_items: N, n_answered: recs.length, n_correct: nc,
               accuracy: +(nc / recs.length).toFixed(4), records: recs };
