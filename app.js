@@ -46,9 +46,16 @@ try { LANG = localStorage.getItem("reader:lang") || "zh"; } catch (e) {}
 /* 切语言时把当前页上随数据变化的文字重刷一遍 */
 function refreshDynamic() {
   $("#who").textContent = (user.full_name || user.username) + " · " + user.institution;
-  var n = Object.keys(loadState().answers || {}).length;
-  $("#prog").textContent = n === 0 ? T("notStarted")
-    : (n >= N ? T("finished") + " " + n + "/" + N : T("inProgress") + " " + n + "/" + N);
+  var ansMap = loadState().answers || {};
+  var n = Object.keys(ansMap).length;
+  if (n === 0) $("#prog").textContent = T("notStarted");
+  else if (n >= N) $("#prog").textContent = T("finished") + " " + n + "/" + N;
+  else {
+    var nextPos = ORDER.findIndex(function (i) { return ansMap[ITEMS[i].uid] === undefined; });
+    $("#prog").textContent = T("inProgress") + " " + n + "/" + N +
+      "　" + T("resumeAt").replace("%d", nextPos + 1);
+  }
+  $("#btn-start").textContent = n === 0 ? T("start") : T("resume");
   if (!storageOK) $("#prog").textContent = T("noStorage");
   if (!$("#page-quiz").classList.contains("hidden")) render();
   if (!$("#page-result").classList.contains("hidden")) showResult();
@@ -77,11 +84,12 @@ function showPage(id) {
 $("#form-login").onsubmit = function (e) {
   e.preventDefault();
   var o = {}; new FormData(e.target).forEach(function (v, k) { o[k] = String(v).trim(); });
+  o.username = o.username.replace(/\s+/g, "");   // 用户名去掉所有空格, 减少两轮对不上的概率
   if (!o.username || !o.full_name || !o.institution || !o.title || !o.years) {
     $("#login-msg").className = "msg err"; $("#login-msg").textContent = T("required"); return;
   }
   user = o;
-  try { sessionStorage.setItem("reader:cur", JSON.stringify(o)); } catch (err) {}
+  try { localStorage.setItem("reader:identity", JSON.stringify(o)); } catch (err) {}
   enterHome();
 };
 
@@ -101,7 +109,7 @@ $("#btn-result").onclick = function () { showResult(); };
 $("#res-export").onclick = function () { $("#btn-export").click(); };
 $("#btn-switch").onclick = function () {
   user = null;
-  try { sessionStorage.removeItem("reader:cur"); } catch (e) {}
+  try { localStorage.removeItem("reader:identity"); } catch (e) {}
   $("#form-login").reset(); $("#login-msg").textContent = ""; showPage("login");
 };
 
@@ -343,8 +351,9 @@ $("#btn-export").onclick = function () {
 /* ---------------- 启动 ---------------- */
 applyLang();
 try {
-  var s = sessionStorage.getItem("reader:cur");
-  if (s) { user = JSON.parse(s); enterHome(); }
+  // 记住身份：医生隔天/换轮次回来直接进首页，不必重填 —— 也避免打错用户名导致进度对不上
+  var saved = localStorage.getItem("reader:identity");
+  if (saved) { user = JSON.parse(saved); enterHome(); }
   else showPage("login");
 } catch (e) { showPage("login"); }
 
