@@ -23,7 +23,9 @@
       <label><span data-i18n="fullName"></span> <span class="req">*</span>
         <input name="full_name" required></label>
       <label><span data-i18n="jobTitle"></span> <span class="req">*</span>
-        <input name="title" required data-ph="phTitle">
+        <input name="title" required data-ph="phTitle"></label>
+      <label><span data-i18n="years"></span> <span class="req">*</span>
+        <input name="years" type="number" min="0" max="70" step="1" required data-ph="phYears">
         <small data-i18n-html="idHint"></small></label>
       <div id="login-msg" class="msg"></div>
       <button class="primary" type="submit" data-i18n="enter"></button>
@@ -87,8 +89,9 @@
           <th data-i18n="institution"></th><td id="res-inst"></td></tr>
       <tr><th data-i18n="fullName"></th><td id="res-name"></td>
           <th data-i18n="jobTitle"></th><td id="res-title2"></td></tr>
-      <tr><th data-i18n="roundLbl"></th><td id="res-round"></td>
-          <th data-i18n="when"></th><td id="res-when"></td></tr>
+      <tr><th data-i18n="years"></th><td id="res-years"></td>
+          <th data-i18n="roundLbl"></th><td id="res-round"></td></tr>
+      <tr><th data-i18n="when"></th><td id="res-when" colspan="3"></td></tr>
     </table>
     <div class="stats">
       <div class="stat"><b id="res-n">0</b><span data-i18n="answered"></span></div>
