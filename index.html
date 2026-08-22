@@ -24,11 +24,9 @@
         <input name="full_name" required></label>
       <label><span data-i18n="jobTitle"></span> <span class="req">*</span>
         <input name="title" required data-ph="phTitle"></label>
-      <div class="field"><label for="f-years"><span data-i18n="years"></span> <span class="req">*</span></label>
-        <input id="f-years" name="years" type="number" min="0" max="70" step="1" data-ph="phYears">
-        <label class="ck"><input type="checkbox" id="f-years-unk" name="years_unknown">
-          <span data-i18n="unknown"></span></label>
-        <small data-i18n-html="idHint"></small></div>
+      <label><span data-i18n="years"></span> <span class="req">*</span>
+        <input name="years" type="number" min="0" max="70" step="1" required data-ph="phYears">
+        <small data-i18n-html="idHint"></small></label>
       <div id="login-msg" class="msg"></div>
       <button class="primary" type="submit" data-i18n="enter"></button>
     </form>
@@ -98,6 +96,7 @@
     <div class="stats">
       <div class="stat"><b id="res-n">0</b><span data-i18n="answered"></span></div>
       <div class="stat"><b id="res-c">0</b><span data-i18n="correct"></span></div>
+      <div class="stat"><b id="res-unk">0</b><span data-i18n="nUnknown"></span></div>
       <div class="stat hi"><b id="res-acc">0%</b><span data-i18n="accuracy"></span></div>
     </div>
     <table class="timetab">

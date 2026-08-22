@@ -13,6 +13,7 @@ var user = null, CUR = 0, tShown = 0, LANG = "zh";
 
 /* ---------------- i18n ---------------- */
 function T(k) { return (window.I18N[LANG] || {})[k] || k; }
+function clsName(i) { return i === -1 ? T("unknownDx") : CLASSES[i]; }
 
 function applyLang() {
   document.documentElement.lang = LANG === "zh" ? "zh" : "en";
@@ -73,20 +74,10 @@ function showPage(id) {
 }
 
 /* ---------------- 登记 ---------------- */
-(function () {
-  var unk = $("#f-years-unk"), yr = $("#f-years");
-  if (unk && yr) unk.onchange = function () {
-    yr.disabled = unk.checked; if (unk.checked) yr.value = "";
-  };
-})();
-
 $("#form-login").onsubmit = function (e) {
   e.preventDefault();
   var o = {}; new FormData(e.target).forEach(function (v, k) { o[k] = String(v).trim(); });
-  o.years_unknown = !!$("#f-years-unk").checked;
-  if (o.years_unknown) o.years = "";
-  if (!o.username || !o.full_name || !o.institution || !o.title ||
-      (!o.years && !o.years_unknown)) {
+  if (!o.username || !o.full_name || !o.institution || !o.title || !o.years) {
     $("#login-msg").className = "msg err"; $("#login-msg").textContent = T("required"); return;
   }
   user = o;
@@ -119,6 +110,13 @@ var optsBuilt = false;
 function buildOptions() {
   if (optsBuilt) return;
   var frag = document.createDocumentFragment();
+  // 「无法判断」放最前面, 下标 -1。医生看不出就选它, 好过被迫在 103 个里瞎猜 ——
+  // 分析时能把"不确定"和"确信但答错"区分开。
+  var unk = document.createElement("button");
+  unk.className = "opt unk"; unk.dataset.idx = "-1";
+  unk.setAttribute("data-i18n", "unknownDx");
+  unk.onclick = function () { pick(-1); };
+  frag.appendChild(unk);
   CLASSES.forEach(function (name, i) {
     var el = document.createElement("button");
     el.className = "opt"; el.dataset.idx = i;
@@ -150,7 +148,7 @@ function render() {
     o.classList.toggle("sel", +o.dataset.idx === ans);
   });
   $("#picked").textContent = ans !== undefined
-    ? T("picked") + "：" + ans + ". " + CLASSES[ans] : T("notPicked");
+    ? T("picked") + "：" + clsName(ans) : T("notPicked");
   $("#prev").disabled = CUR === 0;
   $("#next").textContent = CUR === N - 1 ? T("finish") : T("next");
   tShown = Date.now();
@@ -166,7 +164,7 @@ function pick(idx) {
   document.querySelectorAll(".opt").forEach(function (o) {
     o.classList.toggle("sel", +o.dataset.idx === idx);
   });
-  $("#picked").textContent = T("picked") + "：" + idx + ". " + CLASSES[idx];
+  $("#picked").textContent = T("picked") + "：" + clsName(idx);
   // 刻意不提示对错 —— 避免边做边获得反馈
 
   var n = Object.keys(st.answers).length;
@@ -201,9 +199,10 @@ function showResult() {
   var st = loadState(), ans = st.answers || {}, meta = st.meta || {};
   var uids = Object.keys(ans);
   if (!uids.length) { alert(T("noRecord")); return; }
-  var nc = 0, times = [];
+  var nc = 0, nu = 0, times = [];
   uids.forEach(function (u) {
     var it = ITEMS.filter(function (x) { return String(x.uid) === u; })[0];
+    if (ans[u] === -1) nu++;
     if (ans[u] === it.truth) nc++;
     var ms = (meta[u] || {}).ms;
     if (ms > 0 && ms < 30 * 60 * 1000) times.push(ms);      // 掐掉挂机的异常值
@@ -218,8 +217,7 @@ function showResult() {
   $("#res-inst").textContent = user.institution;
   $("#res-name").textContent = user.full_name || "—";
   $("#res-title2").textContent = user.title || "—";
-  $("#res-years").textContent = user.years_unknown ? T("yearsUnknown")
-    : (user.years ? user.years + (LANG === "zh" ? " 年" : " yr") : "—");
+  $("#res-years").textContent = user.years ? user.years + (LANG === "zh" ? " 年" : " yr") : "—";
   $("#res-round").textContent = ROUND === 1
     ? (LANG === "zh" ? "第 1 轮（无 AI 辅助）" : "Round 1 (unaided)")
     : (LANG === "zh" ? "第 2 轮（含 AI 参考）" : "Round 2 (with AI)");
@@ -228,6 +226,7 @@ function showResult() {
   $("#res-n").textContent = uids.length + " / " + N;
   $("#res-c").textContent = nc;
   $("#res-acc").textContent = (nc / uids.length * 100).toFixed(1) + "%";
+  $("#res-unk").textContent = nu;
   $("#res-total").textContent = fmtDur(sum);
   $("#res-mean").textContent = times.length ? (sum / times.length / 1000).toFixed(1) + " " + T("sec") : "—";
   $("#res-med").textContent = times.length ? (med / 1000).toFixed(1) + " " + T("sec") : "—";
@@ -258,7 +257,7 @@ function buildPayload(partial) {
   var recs = uids.map(function (u) {
     var it = ITEMS.filter(function (x) { return String(x.uid) === u; })[0], m = meta[u] || {};
     return { uid: +u, position: m.position, ms_spent: m.ms, answered_at: m.at,
-             choice_idx: ans[u], choice_name: CLASSES[ans[u]],
+             choice_idx: ans[u], choice_name: clsName(ans[u]),
              truth_idx: it.truth, truth_name: CLASSES[it.truth],
              correct: ans[u] === it.truth ? 1 : 0,
              ai_top1: CLASSES[it.top5[0]],
@@ -269,10 +268,11 @@ function buildPayload(partial) {
                   .filter(function (m) { return m > 0 && m < 1800000; });
   return { username: user.username, full_name: user.full_name,
            institution: user.institution, title: user.title,
-           years_in_practice: user.years_unknown ? null : Number(user.years),
+           years_in_practice: Number(user.years),
            round: ROUND, partial: !!partial,
            client_time: new Date().toISOString(),
            n_items: N, n_answered: recs.length, n_correct: nc,
+           n_unknown: recs.filter(function (r) { return r.choice_idx === -1; }).length,
            accuracy: +(nc / recs.length).toFixed(4),
            total_ms: times.reduce(function (a, b) { return a + b; }, 0),
            verify_code: verifyCode(), records: recs };
@@ -319,7 +319,7 @@ $("#btn-export").onclick = function () {
   var recs = uids.map(function (u) {
     var it = ITEMS.filter(function (x) { return String(x.uid) === u; })[0], m = meta[u] || {};
     return { uid: +u, position: m.position, ms_spent: m.ms, answered_at: m.at,
-             choice_idx: ans[u], choice_name: CLASSES[ans[u]],
+             choice_idx: ans[u], choice_name: clsName(ans[u]),
              truth_idx: it.truth, truth_name: CLASSES[it.truth],
              correct: ans[u] === it.truth ? 1 : 0,
              ai_top1: CLASSES[it.top5[0]],
@@ -328,7 +328,7 @@ $("#btn-export").onclick = function () {
   var nc = recs.filter(function (x) { return x.correct; }).length;
   var out = { username: user.username, institution: user.institution,
               full_name: user.full_name || "", title: user.title || "",
-              years_in_practice: user.years_unknown ? null : (Number(user.years) || null),
+              years_in_practice: Number(user.years) || null,
               round: ROUND, exported_at: new Date().toISOString(),
               n_items: N, n_answered: recs.length, n_correct: nc,
               accuracy: +(nc / recs.length).toFixed(4), records: recs };

@@ -142,11 +142,9 @@ label small{display:block;margin-top:4px;color:#909399;font-size:12px;font-weigh
 .ressync.ok{color:#67c23a;font-weight:600}
 .ressync.err{color:var(--red)}
 
-/* ---------- 「不清楚」勾选 ---------- */
-.field{margin-bottom:14px}
-.field>label:first-child{display:block;margin-bottom:0;font-size:14px;color:var(--sub)}
-.field input[type=number]{width:100%;margin-top:6px;padding:9px 12px;border:1px solid var(--line);
-  border-radius:6px;font:inherit;color:var(--ink)}
-.field input[type=number]:disabled{background:#f5f7fa;color:#c0c4cc}
-label.ck{display:flex;align-items:center;gap:6px;margin:8px 0 0;font-size:13px;cursor:pointer}
-label.ck input{width:auto;margin:0}
+/* ---------- 诊断选项里的「无法判断」 ---------- */
+.opt.unk{grid-column:1/-1;border-style:dashed;border-color:#c0c4cc;color:var(--sub);
+  text-align:center;font-weight:600}
+.opt.unk:hover{border-color:#e6a23c;color:#e6a23c}
+.opt.unk.sel{background:#e6a23c;border-color:#e6a23c;border-style:solid;color:#fff}
+.stats{grid-template-columns:repeat(4,1fr)}
