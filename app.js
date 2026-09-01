@@ -9,11 +9,12 @@ var D = window.QUIZ_DATA, CLASSES = D.classes, ITEMS = D.items, N = ITEMS.length
 var ROUND = window.QUIZ_ROUND;
 var ORDER = ROUND === 2 ? D.order2 : D.order1;
 var $ = function (s) { return document.querySelector(s); };
-var user = null, CUR = 0, tShown = 0, LANG = "zh";
+var user = null, CUR = 0, tShown = 0, LANG = "en";   // 默认英文
 
 /* ---------------- i18n ---------------- */
 function T(k) { return (window.I18N[LANG] || {})[k] || k; }
 var UNK_IDX = 103;                     // 0-102 是 103 个具体类别, 103 = Unknown
+function sep() { return LANG === "zh" ? "：" : ": "; }
 function clsName(i) { return i === UNK_IDX ? T("unknownDx") : CLASSES[i]; }
 
 function applyLang() {
@@ -44,7 +45,7 @@ function setLang(l) {
   applyLang();
 }
 $("#lang").onclick = function () { setLang(LANG === "zh" ? "en" : "zh"); };
-try { LANG = localStorage.getItem("reader:lang") || "zh"; } catch (e) {}
+try { LANG = localStorage.getItem("reader:lang") || "en"; } catch (e) {}
 
 /* 切语言时把当前页上随数据变化的文字重刷一遍 */
 function refreshDynamic() {
@@ -159,7 +160,7 @@ function render() {
     o.classList.toggle("sel", +o.dataset.idx === ans);
   });
   $("#picked").textContent = ans !== undefined
-    ? T("picked") + "：" + clsName(ans) : T("notPicked");
+    ? T("picked") + sep() + clsName(ans) : T("notPicked");
   $("#prev").disabled = CUR === 0;
   $("#next").textContent = CUR === N - 1 ? T("finish") : T("next");
   tShown = Date.now();
@@ -175,7 +176,7 @@ function pick(idx) {
   document.querySelectorAll(".opt").forEach(function (o) {
     o.classList.toggle("sel", +o.dataset.idx === idx);
   });
-  $("#picked").textContent = T("picked") + "：" + clsName(idx);
+  $("#picked").textContent = T("picked") + sep() + clsName(idx);
   // 刻意不提示对错 —— 避免边做边获得反馈
 
   var n = Object.keys(st.answers).length;
